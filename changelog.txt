@@ -1,0 +1,2 @@
+[B]Version 1.0.0 - 2012-10-18[/B]
+- Initial release
