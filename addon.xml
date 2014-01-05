@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<addon id="plugin.video.fdm.dk" version="1.0.0" name="FDM TV" provider-name="twinther [tommy@winther.nu]">
+<addon id="plugin.video.fdm.dk" version="1.1.0" name="FDM TV" provider-name="twinther">
     <requires>
-        <import addon="xbmc.python" version="2.0"/>
+        <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.module.buggalo" version="1.1.2"/>
         <import addon="script.module.elementtree" version="1.2.7"/>
     </requires>
@@ -10,11 +10,15 @@
     </extension>
     <extension point="xbmc.addon.metadata">
         <summary lang="en">FDM TV</summary>
-        <description lang="en">If you have comments or suggestions for this addon, please feel free to participate in the debate on my blog at http://tommy.winther.nu</description>
+        <description lang="en">Watch videos from United Danish Motorowners (FDM) website about tests and technics, travel tips, tips and tricks, etc.[CR][CR]If you have comments or suggestions for this addon, please feel free to participate in the debate on my blog at http://tommy.winther.nu</description>
         <summary lang="da">FDM TV</summary>
-        <description lang="da">Har du kommentarer, ris eller ros til denne addon er du velkommen til at deltage i debatten på min blog på http://tommy.winther.nu</description>
+        <description lang="da">Se videoindslag fra Forenede Danske Motorejere's (FDM) website om blandt andet test og teknik, rejsetips, tips og tricks, mv.[CR][CR]Har du kommentarer, ris eller ros til denne addon er du velkommen til at deltage i debatten på min blog på http://tommy.winther.nu</description>
         <license>GPL 2.0</license>
         <platform>all</platform>
         <language>da</language>
+        <website>http://tommy.winther.nu</website>
+        <email>tommy@winther.nu</email>
+        <source>https://github.com/xbmc-danish-addons/plugin.video.fdm.dk</source>
+        <forum />
     </extension>
 </addon>

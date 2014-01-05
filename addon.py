@@ -1,5 +1,5 @@
 #
-#      Copyright (C) 2012 Tommy Winther
+#      Copyright (C) 2014 Tommy Winther
 #      http://tommy.winther.nu
 #
 #  This Program is free software; you can redistribute it and/or modify
@@ -34,78 +34,80 @@ DATA_URL = 'http://vms.api.qbrick.com/rest/v3/getplayer/D5D17F48C5C03FBE?statusC
 
 # TODO improve xpath expressions once script.module.elementtree is 1.3+
 
-class FDMTVAddon(object):
-    def showCategories(self):
-        doc = self.loadXml()
-        for category in doc.findall('categories/category'):
-            if category.attrib.get('type') != 'standard':
-                continue
 
-            id = category.attrib.get('id')
-            name = category.attrib.get('name')
+def showCategories():
+    doc = loadXml()
+    for category in doc.findall('categories/category'):
+        if category.attrib.get('type') != 'standard':
+            continue
 
-            item = xbmcgui.ListItem(name, iconImage = ICON)
-            item.setProperty('Fanart_Image', FANART)
-            xbmcplugin.addDirectoryItem(HANDLE, PATH + '?category=' + id, item, isFolder = True)
+        id = category.attrib.get('id')
+        name = category.attrib.get('name')
 
-        xbmcplugin.endOfDirectory(HANDLE)
+        item = xbmcgui.ListItem(name, iconImage=ICON)
+        item.setProperty('Fanart_Image', FANART)
+        xbmcplugin.addDirectoryItem(HANDLE, PATH + '?category=' + id, item, isFolder=True)
 
-    def showMedia(self, categoryId):
-        doc = self.loadXml()
-        for media in doc.findall('media/item'):
-            correctCategory = False
-            categories = media.findall('categories/category')
-            for category in categories:
-                if category.text == categoryId:
-                    correctCategory = True
-                    break
+    xbmcplugin.endOfDirectory(HANDLE)
 
-            if not correctCategory:
-                continue
 
-            title = media.findtext('title')
-            image = media.findtext('images/image')
-            smilUrl = media.findtext('playlist/stream/format/substream')
+def showMedia(categoryId):
+    doc = loadXml()
+    for media in doc.findall('media/item'):
+        correctCategory = False
+        categories = media.findall('categories/category')
+        for category in categories:
+            if category.text == categoryId:
+                correctCategory = True
+                break
 
-            infoLabels = dict()
-            infoLabels['studio'] = ADDON.getAddonInfo('name')
-            infoLabels['plot'] = media.findtext('description')
-            infoLabels['title'] = title
-            #infoLabels['date'] = date.strftime('%d.%m.%Y')
-            infoLabels['aired'] = media.findtext('publishdate')[0:10]
-            infoLabels['year'] = int(media.findtext('publishdate')[0:4])
+        if not correctCategory:
+            continue
 
-            item = xbmcgui.ListItem(title, iconImage = image, thumbnailImage = image)
-            item.setInfo('video', infoLabels)
-            item.setProperty('Fanart_Image', image)
-            item.setProperty('IsPlayable', 'true')
-            xbmcplugin.addDirectoryItem(HANDLE, PATH + '?smil=' + smilUrl.replace('&', '%26'), item)
+        title = media.findtext('title')
+        image = media.findtext('images/image')
+        smilUrl = media.findtext('playlist/stream/format/substream')
 
-        xbmcplugin.endOfDirectory(HANDLE)
+        infoLabels = dict()
+        infoLabels['studio'] = ADDON.getAddonInfo('name')
+        infoLabels['plot'] = media.findtext('description')
+        infoLabels['title'] = title
+        #infoLabels['date'] = date.strftime('%d.%m.%Y')
+        infoLabels['aired'] = media.findtext('publishdate')[0:10]
+        infoLabels['year'] = int(media.findtext('publishdate')[0:4])
 
-    def playMedia(self, smilUrl):
-        doc = self.loadXml(smilUrl)
-        if doc:
-            base = doc.find('head/meta').attrib.get('base')
-            videos = doc.findall('body/switch/video')
-            video = videos[len(videos) - 1].attrib.get('src')
-            # todo quality
+        item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
+        item.setInfo('video', infoLabels)
+        item.setProperty('Fanart_Image', image)
+        item.setProperty('IsPlayable', 'true')
+        xbmcplugin.addDirectoryItem(HANDLE, PATH + '?smil=' + smilUrl.replace('&', '%26'), item)
 
-            item = xbmcgui.ListItem(path = base + ' playpath=' + video)
-            xbmcplugin.setResolvedUrl(HANDLE, True, item)
-        else:
-            xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
+    xbmcplugin.endOfDirectory(HANDLE)
 
-    def loadXml(self, url = DATA_URL):
-#        try:
+
+def playMedia(smilUrl):
+    doc = loadXml(smilUrl)
+    if doc is not None:
+        base = doc.find('head/meta').attrib.get('base')
+        videos = doc.findall('body/switch/video')
+        video = videos[len(videos) - 1].attrib.get('src')
+        # todo quality
+
+        item = xbmcgui.ListItem(path=base)
+        item.setProperty('PlayPath', video)
+        xbmcplugin.setResolvedUrl(HANDLE, True, item)
+    else:
+        xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
+
+
+def loadXml(url=DATA_URL):
+    try:
         u = urllib2.urlopen(url)
         response = u.read()
         u.close()
-        doc = xml.etree.ElementTree.fromstring(response)
-#        except Exception:
-#            pass
-
-        return doc
+        return xml.etree.ElementTree.fromstring(response)
+    except Exception:
+        return None
 
 if __name__ == '__main__':
     ADDON = xbmcaddon.Addon()
@@ -118,12 +120,11 @@ if __name__ == '__main__':
 
     buggalo.SUBMIT_URL = 'http://tommy.winther.nu/exception/submit.php'
     try:
-        fdmtv = FDMTVAddon()
-        if PARAMS.has_key('category'):
-            fdmtv.showMedia(PARAMS['category'][0])
-        elif PARAMS.has_key('smil'):
-            fdmtv.playMedia(PARAMS['smil'][0])
+        if 'category' in PARAMS:
+            showMedia(PARAMS['category'][0])
+        elif 'smil' in PARAMS:
+            playMedia(PARAMS['smil'][0])
         else:
-            fdmtv.showCategories()
+            showCategories()
     except Exception:
         buggalo.onExceptionRaised()
